@@ -1,0 +1,96 @@
+package org.dga.taxiservice.domain.model
+
+import org.dga.taxiservice.domain.event.RideAcceptedEvent
+import org.dga.taxiservice.domain.event.RideCanceledEvent
+import org.dga.taxiservice.domain.event.RideCreatedEvent
+import org.dga.taxiservice.domain.event.RideDrivingEvent
+import org.dga.taxiservice.domain.event.RideEvent
+import org.dga.taxiservice.domain.event.RideFinishedEvent
+import org.dga.taxiservice.domain.event.RideWaitingEvent
+import java.time.LocalDateTime
+import java.util.UUID
+
+class RideAggregate private constructor(
+    val rideId: UUID,
+    var status: Status,
+    val events: MutableList<RideEvent> = mutableListOf(),
+) {
+
+    companion object {
+        fun create(rideId: UUID, userId: UUID?, origin: String?, destination: String?): RideAggregate {
+            val ride = RideAggregate(
+                rideId = rideId,
+                status = Status.WAITING,
+            )
+            val event = RideCreatedEvent(
+                rideId = rideId,
+                userId = userId!!,
+                origin = origin!!,
+                destination = destination!!,
+                time = LocalDateTime.now(),
+            )
+            ride.apply(event)
+            ride.record(event)
+            return ride
+        }
+
+        fun rehydrate(events: List<RideEvent>): RideAggregate {
+            RideAggregate(events.first().rideId, Status.WAITING).apply {
+                events.forEach { event ->
+                    apply(event)
+                }
+                return this
+            }
+        }
+    }
+
+    fun changeStatus(newStatus: Status, driverId: UUID? = null) {
+        val event = when (status) {
+            Status.WAITING -> RideWaitingEvent(
+                rideId = rideId,
+                time = LocalDateTime.now(),
+            )
+
+            Status.DRIVING -> RideDrivingEvent(
+                rideId = rideId,
+                time = LocalDateTime.now(),
+            )
+
+            Status.ACCEPTED -> RideAcceptedEvent(
+                rideId = rideId,
+                time = LocalDateTime.now(),
+                driverId = driverId!!,
+            )
+
+            Status.FINISHED -> RideFinishedEvent(
+                rideId = rideId,
+                time = LocalDateTime.now(),
+            )
+
+            Status.CANCELED -> RideCanceledEvent(
+                rideId = rideId,
+                time = LocalDateTime.now(),
+                canceledBy = "USER",
+            )
+
+            else -> throw IllegalArgumentException("Invalid status")
+        }
+        apply(event)
+        record(event)
+    }
+
+    private fun apply(event: RideEvent) {
+        status = when (event) {
+            is RideCreatedEvent -> Status.WAITING
+            is RideAcceptedEvent -> Status.ACCEPTED
+            is RideWaitingEvent -> Status.WAITING
+            is RideDrivingEvent -> Status.DRIVING
+            is RideFinishedEvent -> Status.FINISHED
+            is RideCanceledEvent -> Status.CANCELED
+        }
+    }
+
+    private fun record(event: RideEvent) {
+        events.add(event)
+    }
+}
