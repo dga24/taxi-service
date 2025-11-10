@@ -1,7 +1,9 @@
 package org.dga.taxiservice.infrastructure.rest.dto
 
+import java.util.UUID
+
 data class UpdateRideRequest (
-    val rideId: String,
+    val rideId: UUID,
     val status: String,
-    val driverId: String? = null
+    val driverId: UUID? = null
 )
