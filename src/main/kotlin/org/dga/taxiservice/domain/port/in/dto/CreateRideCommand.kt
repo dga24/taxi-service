@@ -1,4 +1,4 @@
-package org.dga.taxiservice.domain.port.`in`
+package org.dga.taxiservice.domain.port.`in`.dto
 
 import java.util.UUID
 

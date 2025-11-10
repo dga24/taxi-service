@@ -2,12 +2,15 @@ package org.dga.taxiservice.application.command
 
 import org.dga.taxiservice.domain.model.RideAggregate
 import org.dga.taxiservice.domain.model.Status
-import org.dga.taxiservice.domain.port.`in`.CreateRideCommand
+import org.dga.taxiservice.domain.port.`in`.dto.CreateRideCommand
 import org.dga.taxiservice.domain.port.`in`.RideCommandUseCase
+import org.dga.taxiservice.domain.port.`in`.dto.UpdateRideCommand
 import org.dga.taxiservice.domain.port.out.EventStore
 import org.dga.taxiservice.domain.port.out.IdGenerator
+import org.springframework.stereotype.Service
 import java.util.UUID
 
+@Service
 class RideCommandService(
     private val idGenerator: IdGenerator,
     private val eventStore: EventStore,
@@ -25,10 +28,13 @@ class RideCommandService(
         return id
     }
 
-    override fun updateRide(rideId: UUID, status: Status, driverId: UUID?) {
-        val pastEvents = eventStore.load(rideId = rideId)
-        val aggregate = RideAggregate.rehydrate(events = pastEvents)
-        aggregate.changeStatus(newStatus = status, driverId = driverId)
-        eventStore.append(rideId = rideId, newEvents = aggregate.events)
+    override fun updateRide(command: UpdateRideCommand) {
+        command.run {
+            val pastEvents = eventStore.load(rideId = rideId)
+            val rideAggregate = RideAggregate.rehydrate(events = pastEvents)
+            val s =Status.valueOf(status)
+            rideAggregate.changeStatus(newStatus = s, driverId = driverId)
+            eventStore.append(rideId = rideId, newEvents = rideAggregate.events)
+        }
     }
 }
