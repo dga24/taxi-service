@@ -72,8 +72,6 @@ class RideAggregate private constructor(
                 time = LocalDateTime.now(),
                 canceledBy = "USER",
             )
-
-            else -> throw IllegalArgumentException("Invalid status")
         }
         apply(event)
         record(event)
