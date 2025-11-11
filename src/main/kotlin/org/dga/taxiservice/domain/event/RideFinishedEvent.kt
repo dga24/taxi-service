@@ -1,6 +1,9 @@
 package org.dga.taxiservice.domain.event
 
+import java.time.LocalDateTime
+import java.util.UUID
+
 data class RideFinishedEvent(
-    override val rideId: java.util.UUID,
-    override val time: java.time.LocalDateTime,
+    override val rideId: UUID,
+    override val time: LocalDateTime,
 ) : RideEvent
