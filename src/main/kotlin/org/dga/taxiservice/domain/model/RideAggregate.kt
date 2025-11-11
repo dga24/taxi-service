@@ -45,6 +45,12 @@ class RideAggregate private constructor(
     }
 
     fun changeStatus(newStatus: Status, driverId: UUID? = null) {
+        validateStatusChange(from = status, to = newStatus)
+
+        if (newStatus == Status.ACCEPTED) {
+            requireNotNull(driverId) { "Driver ID is required when accepting a ride" }
+        }
+
         val event = when (newStatus) {
             Status.WAITING -> RideWaitingEvent(
                 rideId = rideId,
@@ -75,6 +81,19 @@ class RideAggregate private constructor(
         }
         apply(event)
         addUncommitedEvent(event)
+    }
+
+    private fun validateStatusChange(from: Status, to: Status) {
+        val valid = mapOf(
+            Status.WAITING to listOf(Status.ACCEPTED, Status.CANCELED),
+            Status.ACCEPTED to listOf(Status.DRIVING, Status.CANCELED),
+            Status.DRIVING to listOf(Status.FINISHED, Status.CANCELED),
+            Status.FINISHED to emptyList(),
+            Status.CANCELED to emptyList(),
+        )
+        if (to !in valid.getValue(from)) {
+            throw IllegalStateException("Invalid status change from $from to $to")
+        }
     }
 
     private fun apply(event: RideEvent) {
