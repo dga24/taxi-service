@@ -9,9 +9,13 @@ import org.dga.taxiservice.domain.port.out.EventRepository
 import org.dga.taxiservice.domain.port.out.IdGenerator
 import org.dga.taxiservice.domain.port.out.RideProjector
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
+//In-memory EventPublisher is synchronous
+// in production would use separate transactions with message queue
 @Service
+@Transactional
 class RideCommandService(
     private val idGenerator: IdGenerator,
     private val eventRepository: EventRepository,
