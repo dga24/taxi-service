@@ -1,9 +1,14 @@
 package org.dga.taxiservice.infrastructure.rest.dto
 
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
 import java.util.UUID
 
-data class CreateRideRequest (
+data class CreateRideRequest(
+    @field:NotNull
     val userId: UUID,
+    @field:NotBlank
     val origin: String,
-    val destination: String
+    @field:NotBlank
+    val destination: String,
 )

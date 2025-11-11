@@ -39,3 +39,7 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### data ###
+data/taxi-service-db.mv.db
+data/taxi-service-db.trace.db

@@ -30,7 +30,7 @@ class RideAggregate private constructor(
                 time = LocalDateTime.now(),
             )
             ride.apply(event)
-            ride.record(event)
+            ride.addUncommitedEvent(event)
             return ride
         }
 
@@ -45,7 +45,7 @@ class RideAggregate private constructor(
     }
 
     fun changeStatus(newStatus: Status, driverId: UUID? = null) {
-        val event = when (status) {
+        val event = when (newStatus) {
             Status.WAITING -> RideWaitingEvent(
                 rideId = rideId,
                 time = LocalDateTime.now(),
@@ -72,11 +72,9 @@ class RideAggregate private constructor(
                 time = LocalDateTime.now(),
                 canceledBy = "USER",
             )
-
-            else -> throw IllegalArgumentException("Invalid status")
         }
         apply(event)
-        record(event)
+        addUncommitedEvent(event)
     }
 
     private fun apply(event: RideEvent) {
@@ -90,7 +88,7 @@ class RideAggregate private constructor(
         }
     }
 
-    private fun record(event: RideEvent) {
+    private fun addUncommitedEvent(event: RideEvent) {
         events.add(event)
     }
 }
