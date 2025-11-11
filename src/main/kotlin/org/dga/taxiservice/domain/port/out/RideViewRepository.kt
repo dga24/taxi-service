@@ -1,28 +1,21 @@
-package org.dga.taxiservice.domain.port.`in`
+package org.dga.taxiservice.domain.port.out
 
-import org.dga.taxiservice.domain.event.RideEvent
 import org.dga.taxiservice.domain.model.PageResponse
 import org.dga.taxiservice.domain.model.RideView
 import org.dga.taxiservice.domain.model.Status
 import java.time.LocalDateTime
 import java.util.UUID
 
-interface RideQueryUseCase {
+interface RideViewRepository {
 
-    fun getRides(
+    fun findById(rideId: UUID): RideView?
+
+    fun find(
         rideId: UUID? = null,
         status: Status? = null,
         from: LocalDateTime? = null,
         to: LocalDateTime? = null,
         page: Int = 0,
-        pageSize: Int = 20,
+        size: Int = 20,
     ): PageResponse<RideView>
-
-    fun getRideById(rideId: UUID): RideView?
-
-    fun getRideHistory(
-        rideId: UUID,
-        from: LocalDateTime? = null,
-        to: LocalDateTime? = null,
-    ): List<RideEvent>
 }

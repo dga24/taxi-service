@@ -40,7 +40,7 @@ class JdbcRideProjector(
             UPDATE_STATUS,
             mapOf(
                 "ride_id" to rideId,
-                "status" to status
+                "status" to status.name
             )
         )
     }
@@ -54,7 +54,7 @@ class JdbcRideProjector(
                 "driver_id" to null,
                 "origin" to event.origin,
                 "destination" to event.destination,
-                "status" to Status.WAITING,
+                "status" to Status.WAITING.name,
                 "updated_at" to event.time
             )
         )
@@ -65,7 +65,7 @@ class JdbcRideProjector(
             UPDATE_VIEW,
             mapOf(
                 "driver_id" to event.driverId,
-                "status" to Status.ACCEPTED,
+                "status" to Status.ACCEPTED.name,
                 "updated_at" to event.time,
                 "ride_id" to event.rideId
             )

@@ -1,5 +1,6 @@
 package org.dga.taxiservice.infrastructure.rest
 
+import jakarta.validation.Valid
 import org.dga.taxiservice.domain.port.`in`.dto.CreateRideCommand
 import org.dga.taxiservice.domain.port.`in`.RideCommandUseCase
 import org.dga.taxiservice.domain.port.`in`.dto.UpdateRideCommand
@@ -21,7 +22,9 @@ class RideCommandController(
 ) {
 
     @PostMapping
-    fun createRide(@RequestBody createRide: CreateRideRequest): ResponseEntity<UUID> =
+    fun createRide(
+        @Valid @RequestBody createRide: CreateRideRequest,
+    ): ResponseEntity<UUID> =
         CreateRideCommand(
             userId = createRide.userId,
             origin = createRide.origin,
@@ -32,7 +35,7 @@ class RideCommandController(
 
     @PutMapping("/{rideId}")
     fun updateRide(
-        @RequestBody updateRide: UpdateRideRequest,
+        @Valid @RequestBody updateRide: UpdateRideRequest,
         @PathVariable rideId: UUID,
     ): ResponseEntity<Unit> {
         UpdateRideCommand(

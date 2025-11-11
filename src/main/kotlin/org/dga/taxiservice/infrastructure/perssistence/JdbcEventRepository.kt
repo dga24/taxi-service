@@ -2,7 +2,7 @@ package org.dga.taxiservice.infrastructure.perssistence
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.dga.taxiservice.domain.event.RideEvent
-import org.dga.taxiservice.domain.port.out.EventStore
+import org.dga.taxiservice.domain.port.out.EventRepository
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -10,10 +10,10 @@ import java.sql.ResultSet
 import java.util.UUID
 
 @Repository
-class JdbcEventStore(
+class JdbcEventRepository(
     private val jdbcOps: NamedParameterJdbcTemplate,
     private val objectMapper: ObjectMapper,
-) : EventStore {
+) : EventRepository {
 
     override fun append(rideId: UUID, newEvents: List<RideEvent>) {
         var nextSeq = getNextSequence(rideId)
@@ -70,7 +70,7 @@ class JdbcEventStore(
             SELECT max(seq) FROM events WHERE ride_id = :ride_id
         """
         const val GET_RIDE_DETAILS = """
-            SELECT * FROM events WHERE ride_id = :ride_id
+            SELECT * FROM events WHERE ride_id = :ride_id order by seq ASC
         """
     }
 }
