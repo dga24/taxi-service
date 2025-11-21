@@ -5,6 +5,7 @@ import org.dga.taxiservice.domain.model.Status
 import org.dga.taxiservice.domain.port.`in`.dto.CreateRideCommand
 import org.dga.taxiservice.domain.port.`in`.RideCommandUseCase
 import org.dga.taxiservice.domain.port.`in`.dto.UpdateRideCommand
+import org.dga.taxiservice.domain.port.out.EventPublisher
 import org.dga.taxiservice.domain.port.out.EventRepository
 import org.dga.taxiservice.domain.port.out.IdGenerator
 import org.dga.taxiservice.domain.port.out.RideProjector
@@ -19,7 +20,7 @@ import java.util.UUID
 class RideCommandService(
     private val idGenerator: IdGenerator,
     private val eventRepository: EventRepository,
-    private val rideProjector: RideProjector,
+    private val eventPublisher: EventPublisher,
 ) : RideCommandUseCase {
 
     override fun createRide(command: CreateRideCommand): UUID {
@@ -31,7 +32,7 @@ class RideCommandService(
             destination = command.destination,
         )
         eventRepository.append(rideId = id, newEvents = aggregate.events)
-        rideProjector.project(event = aggregate.events.last())
+        eventPublisher.publish(event = aggregate.events.last())
         return id
     }
 
@@ -45,7 +46,7 @@ class RideCommandService(
             val s = Status.valueOf(status)
             rideAggregate.changeStatus(newStatus = s, driverId = driverId)
             eventRepository.append(rideId = rideId, newEvents = rideAggregate.events)
-            rideProjector.project(event = rideAggregate.events.last())
+            eventPublisher.publish(event = rideAggregate.events.last())
         }
     }
 }
