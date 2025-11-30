@@ -1,5 +1,7 @@
 package org.dga.taxiservice.infrastructure.perssistence
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.dga.taxiservice.domain.event.OutBoxEvent
 import org.dga.taxiservice.domain.event.RideAcceptedEvent
 import org.dga.taxiservice.domain.event.RideCanceledEvent
 import org.dga.taxiservice.domain.event.RideCreatedEvent
@@ -16,9 +18,13 @@ import java.util.UUID
 @Repository
 class JdbcRideProjector(
     private val jdbcOps: NamedParameterJdbcTemplate,
+    private val objectMapper: ObjectMapper,
 ) : RideProjector {
 
-    override fun project(event: RideEvent) {
+    override fun project(outBoxEvent: OutBoxEvent) {
+        val type = outBoxEvent.eventType
+        val eventClass = Class.forName("org.dga.taxiservice.domain.event.$type")
+        val event = objectMapper.readValue(outBoxEvent.eventPayload, eventClass) as RideEvent
         when (event) {
             is RideCreatedEvent -> createView(event)
             is RideAcceptedEvent -> projectAccepted(event)

@@ -1,6 +1,7 @@
 package org.dga.taxiservice
 
 import org.dga.taxiservice.infrastructure.rest.dto.CreateRideRequest
+import org.dga.taxiservice.infrastructure.rest.dto.RideHistoryResponse
 import org.dga.taxiservice.infrastructure.rest.dto.UpdateRideRequest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -10,6 +11,7 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
+import java.lang.Thread.sleep
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -56,16 +58,17 @@ class RideEndToEndTest {
             Void::class.java
         )
 
-        // Query (CQRS)
+        sleep(2100)
+
         val ride = restTemplate.getForEntity("/api/v1/rides/$rideId", String::class.java)
         assertEquals(HttpStatus.OK, ride.statusCode)
         assert(ride.body!!.contains("FINISHED"))
 
         // History (Event Sourcing)
-        val history = restTemplate.getForEntity("/api/v1/rides/$rideId/history", String::class.java)
+        val history = restTemplate.getForEntity("/api/v1/rides/$rideId/history", RideHistoryResponse::class.java)
         assertEquals(HttpStatus.OK, history.statusCode)
-        assert(history.body!!.contains("RideCreated"))
-        assert(history.body!!.contains("RideFinished"))
+        assert(history.body!!.events.size == 4)
+        assert(history.body!!.events.last().eventType == "RideFinished")
     }
 
     @Test

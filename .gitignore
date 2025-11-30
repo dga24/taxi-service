@@ -43,3 +43,8 @@ out/
 ### data ###
 data/taxi-service-db.mv.db
 data/taxi-service-db.trace.db
+
+### Environment ###
+.env
+.env.local
+.env.*.local

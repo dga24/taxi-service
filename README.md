@@ -1,78 +1,57 @@
-# Taxi Service API
+Build a Taxi Service Operations backend system that manages ride lifecycles using the Event Sourcing and CQRS patterns. Showcase your expertise in scalable architecture, clean code, and robust design principles.
 
-Backend for taxi ride management implemented with Event Sourcing and CQRS from https://app.portfo.me/.
+Objectives
+Create a backend system that allows:
 
-## Technologies
+Ride Creation
 
-- Kotlin 1.9.25
-- Spring Boot 3.5.7
-- H2 Database
-- Gradle
+Users can create a new ride with the initial status: PENDING.
 
-## Architecture
+Status Updates
 
-- **Event Sourcing**: All changes stored as immutable events
-- **CQRS**: Separation between write (commands) and read (queries)
-- **Hexagonal Architecture**: Domain, Application, Infrastructure
+Update ride statuses to the following:
 
-## Run the application
+ACCEPTED: Driver is on the way to the origin location.
 
-```bash
-./gradlew bootRun
-```
+WAITING: Driver has arrived at the origin location and is waiting for the passenger.
 
-API will be available at `http://localhost:8080`
+CANCELED: Either the driver or passenger canceled the ride.
 
-## Run tests
+DRIVING: Driver picked up the passenger and is en route to the destination.
 
-```bash
-./gradlew test
-```
+FINISHED: The ride is completed.
 
-## API Endpoints
-in postman.json is a postman collection for testing
+Ride History
 
-### Create ride
-```
-POST /api/v1/rides
-{
-  "userId": "uuid",
-  "origin": "Origin address",
-  "destination": "Destination address"
-}
-```
+Fetch a paginated list of rides with their current statuses.
 
-### Update ride status
-```
-PUT /api/v1/rides/{rideId}
-{
-  "status": "ACCEPTED|WAITING|CANCELED|DRIVING|FINISHED",
-  "driverId": "uuid"  // required only for ACCEPTED
-}
-```
+Requirements
+Core Architecture
+Implement Event Sourcing to store all changes to a ride as a sequence of events.
 
-### Get ride
-```
-GET /api/v1/rides/{rideId}
-```
+Use CQRS (Command Query Responsibility Segregation) to separate write operations (commands) and read operations (queries).
 
-### List rides (paginated)
-```
-GET /api/v1/rides?rideId=uuid&status=PENDING&from=2024-01-01T00:00:00&to=2024-12-31T23:59:59&page=0&size=20
-```
+Data Store
+Use an event store (e.g., PostgreSQL, MongoDB, or an event-centric DB) to persist events. Please use embedded database for the task.
 
-## Ride states
+Implement a read model (materialized view) for efficient querying of ride data.
 
-1. **PENDING** - Ride created
-2. **ACCEPTED** - Driver assigned
-3. **WAITING** - Driver waiting for passenger
-4. **CANCELED** - Ride canceled
-5. **DRIVING** - Ride in progress
-6. **FINISHED** - Ride completed
+Technical Requirements
+Code:
 
-## Database
+Clean, modular, and extensible code with well-defined boundaries.
 
-- **Development**: H2 file-based (`./data/taxi-service-db`)
-- **Tests**: H2 in-memory
+Implement proper error handling and validation.
 
+Testing:
 
+Unit tests for at least critical business logic.
+
+Integration tests for the event store and materialized views.
+
+API:
+
+Expose a RESTful or GraphQL API to create rides, update statuses, and fetch rides.
+
+The bonus point
+Implement an endpoint that accepts a ride id, a date range and returns historical events for a ride for that period.
