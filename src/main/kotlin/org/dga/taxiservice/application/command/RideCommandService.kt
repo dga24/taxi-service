@@ -1,26 +1,29 @@
 package org.dga.taxiservice.application.command
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.dga.taxiservice.domain.event.OutBoxEvent
+import org.dga.taxiservice.domain.event.RideEvent
 import org.dga.taxiservice.domain.model.RideAggregate
 import org.dga.taxiservice.domain.model.Status
 import org.dga.taxiservice.domain.port.`in`.dto.CreateRideCommand
 import org.dga.taxiservice.domain.port.`in`.RideCommandUseCase
 import org.dga.taxiservice.domain.port.`in`.dto.UpdateRideCommand
-import org.dga.taxiservice.domain.port.out.EventPublisher
 import org.dga.taxiservice.domain.port.out.EventRepository
 import org.dga.taxiservice.domain.port.out.IdGenerator
-import org.dga.taxiservice.domain.port.out.RideProjector
+import org.dga.taxiservice.domain.port.out.OutBoxRepository
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 
-//In-memory EventPublisher is synchronous
-// in production would use separate transactions with message queue
 @Service
 @Transactional
 class RideCommandService(
     private val idGenerator: IdGenerator,
     private val eventRepository: EventRepository,
-    private val eventPublisher: EventPublisher,
+    private val outBoxRepository: OutBoxRepository,
+    private val objectMapper: ObjectMapper,
 ) : RideCommandUseCase {
 
     override fun createRide(command: CreateRideCommand): UUID {
@@ -32,9 +35,11 @@ class RideCommandService(
             destination = command.destination,
         )
         eventRepository.append(rideId = id, newEvents = aggregate.events)
-        eventPublisher.publish(event = aggregate.events.last())
+        val outBoxEvent = generateOutBoxEvent(event = aggregate.events.last())
+        outBoxRepository.save(event = outBoxEvent)
         return id
     }
+
 
     override fun updateRide(command: UpdateRideCommand) {
         command.run {
@@ -46,7 +51,20 @@ class RideCommandService(
             val s = Status.valueOf(status)
             rideAggregate.changeStatus(newStatus = s, driverId = driverId)
             eventRepository.append(rideId = rideId, newEvents = rideAggregate.events)
-            eventPublisher.publish(event = rideAggregate.events.last())
+            val outBoxEvent = generateOutBoxEvent(event = rideAggregate.events.last())
+            outBoxRepository.save(event = outBoxEvent)
         }
+    }
+
+    private fun generateOutBoxEvent(event: RideEvent): OutBoxEvent = event.run {
+        OutBoxEvent(
+            id = idGenerator.generate(),
+            rideId = rideId,
+            eventType = this::class.simpleName!!,
+            eventPayload = objectMapper.writeValueAsString(this),
+            createdAt = LocalDateTime.now(),
+            published = false,
+            publishedAt = null
+        )
     }
 }

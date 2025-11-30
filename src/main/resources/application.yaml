@@ -1,25 +1,32 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:taxi-service-db
-    #url: jdbc:h2:file:./data/taxi-service-db # Persistent DB in file
-    driver-class-name: org.h2.Driver
-    username: u
-    password: u
+  profiles:
+    active: ${SPRING_PROFILE:dev}
 
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:file:./data/taxi-service-db}
+    driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
+    username: ${DATABASE_USERNAME:u}
+    password: ${DATABASE_PASSWORD:u}
 
   h2:
     console:
-      enabled: true
-      path: /h2-console # http://localhost:8080/h2-console
+      enabled: ${H2_CONSOLE_ENABLED:true}
+      path: /h2-console
 
   sql:
     init:
-      mode: always
-
+      mode: ${SQL_INIT_MODE:always}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+
+sqs:
+  enabled: ${SQS_ENABLED:false}
+  projections: ${SQS_PROJECTIONS_ENDPOINT:}
+
 logging:
   level:
-    org.springframework.jdbc.datasource.init: DEBUG
+    root: ${LOG_LEVEL_ROOT:INFO}
+    org.springframework.jdbc.datasource.init: ${LOG_LEVEL_SQL:DEBUG}
+    org.dga.taxiservice: ${LOG_LEVEL_APP:DEBUG}
 

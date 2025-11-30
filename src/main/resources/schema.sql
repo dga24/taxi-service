@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS ride_view;
 
 CREATE TABLE IF NOT EXISTS events
 (
-    id          IDENTITY PRIMARY KEY,
+    id IDENTITY PRIMARY KEY,
     ride_id     VARCHAR(36)  NOT NULL,
     seq         INT          NOT NULL,
     type        VARCHAR(100) NOT NULL,
@@ -22,3 +22,14 @@ CREATE TABLE IF NOT EXISTS ride_view
     status      VARCHAR(50)  NOT NULL,
     updated_at  TIMESTAMP    NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS outbox_events
+(
+    id            VARCHAR(36) PRIMARY KEY,
+    ride_id       VARCHAR(36)  NOT NULL,
+    event_type    VARCHAR(100) NOT NULL,
+    event_payload VARCHAR(255) NOT NULL,
+    created_at    TIMESTAMP    NOT NULL,
+    published_at  TIMESTAMP,
+    published     BOOLEAN DEFAULT FALSE
+)
