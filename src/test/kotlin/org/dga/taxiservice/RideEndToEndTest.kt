@@ -1,8 +1,10 @@
 package org.dga.taxiservice
 
+import com.ninjasquad.springmockk.SpykBean
 import org.dga.taxiservice.infrastructure.rest.dto.CreateRideRequest
 import org.dga.taxiservice.infrastructure.rest.dto.RideHistoryResponse
 import org.dga.taxiservice.infrastructure.rest.dto.UpdateRideRequest
+import org.dga.taxiservice.infrastructure.workers.ProjectWorker
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -11,13 +13,15 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
-import java.lang.Thread.sleep
 import java.util.UUID
 import kotlin.test.assertEquals
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class RideEndToEndTest {
+
+    @SpykBean
+    private lateinit var worker: ProjectWorker
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
@@ -58,7 +62,7 @@ class RideEndToEndTest {
             Void::class.java
         )
 
-        sleep(2100)
+        worker.processOutbox()
 
         val ride = restTemplate.getForEntity("/api/v1/rides/$rideId", String::class.java)
         assertEquals(HttpStatus.OK, ride.statusCode)

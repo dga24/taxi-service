@@ -7,12 +7,12 @@ import org.dga.taxiservice.domain.port.`in`.dto.CreateRideCommand
 import org.dga.taxiservice.domain.port.out.EventRepository
 import org.dga.taxiservice.domain.port.out.OutBoxRepository
 import org.dga.taxiservice.domain.port.out.RideViewRepository
+import org.dga.taxiservice.infrastructure.workers.ProjectWorker
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import java.lang.Thread.sleep
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -23,6 +23,9 @@ class OutboxIntegrationTest {
 
     @SpykBean
     lateinit var outBoxRepository: OutBoxRepository
+
+    @SpykBean
+    lateinit var worker: ProjectWorker
 
     @Autowired
     lateinit var eventRepository: EventRepository
@@ -45,7 +48,7 @@ class OutboxIntegrationTest {
         // Verify rollback
         assertTrue(eventRepository.load(id).count() == 1)
 
-        sleep(1100)
+        worker.processOutbox()
 
         assertEquals(rideViewRepository.findById(id)?.destination, cmd.destination)
     }
